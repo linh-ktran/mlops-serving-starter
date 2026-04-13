@@ -22,6 +22,7 @@ class PredictionResponse(BaseModel):
 def get_model_service() -> ModelService:
     model_uri = os.getenv("MODEL_URI")
     if not model_uri:
+        # set MODEL_URI=runs:/<RUN_ID>/model before starting the server
         raise RuntimeError("MODEL_URI must be set, for example runs:/<RUN_ID>/model")
     tracking_uri = os.getenv("MLFLOW_TRACKING_URI")
     return ModelService(model_uri=model_uri, tracking_uri=tracking_uri)

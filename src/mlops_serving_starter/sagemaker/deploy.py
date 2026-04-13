@@ -3,21 +3,13 @@ from __future__ import annotations
 import argparse
 import importlib
 import json
-import re
 from typing import Any
+
+from mlops_serving_starter.utils.naming import sanitize_resource_name
 
 DEFAULT_INSTANCE_TYPE = "ml.m5.large"
 DEFAULT_INITIAL_INSTANCE_COUNT = 1
 DEFAULT_VARIANT_NAME = "AllTraffic"
-MAX_NAME_LENGTH = 63
-
-
-def sanitize_resource_name(value: str) -> str:
-    normalized = re.sub(r"[^A-Za-z0-9-]+", "-", value).strip("-")
-    normalized = re.sub(r"-+", "-", normalized)
-    if not normalized:
-        normalized = "mlops-serving-starter"
-    return normalized[:MAX_NAME_LENGTH]
 
 
 def build_resource_names(endpoint_name: str) -> dict[str, str]:

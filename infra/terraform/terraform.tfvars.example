@@ -1,0 +1,10 @@
+aws_region                  = "eu-west-1"
+name_prefix                 = "mlops-serving-starter"
+sagemaker_execution_role_arn = "arn:aws:iam::123456789012:role/SageMakerExecutionRole"
+model_data_url              = "s3://your-bucket/artifacts/model.tar.gz"
+image_uri                   = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/mlops-serving-starter:latest"
+pipeline_name               = "mlops-serving-starter-pipeline"
+schedule_enabled            = false
+alarm_actions               = []
+ok_actions                  = []
+

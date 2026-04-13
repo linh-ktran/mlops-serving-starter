@@ -1,0 +1,52 @@
+[project]
+name = "mlops-serving-starter"
+version = "0.1.0"
+description = "Public MLOps starter with MLflow tracking, FastAPI serving, and SageMaker-compatible handlers"
+authors = [
+    { name = "Linh Tran" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mlflow>=2.13.0,<3.0.0",
+    "scikit-learn>=1.5.0,<2.0.0",
+    "pandas>=2.2.0,<3.0.0",
+    "numpy>=1.26.0,<3.0.0",
+    "fastapi>=0.115.0,<1.0.0",
+    "uvicorn>=0.30.0,<1.0.0",
+    "pydantic>=2.8.0,<3.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2.0,<9.0.0",
+    "httpx>=0.27.0,<1.0.0",
+    "ruff>=0.5.0,<1.0.0"
+]
+aws = [
+    "boto3>=1.34.0,<2.0.0"
+]
+sagemaker = [
+    "sagemaker-inference>=1.10.1,<2.0.0"
+]
+
+[project.scripts]
+train-model = "mlops_serving_starter.training.train:main"
+serve-api = "mlops_serving_starter.api.app:run"
+deploy-sagemaker = "mlops_serving_starter.sagemaker.deploy:main"
+deploy-sagemaker-pipeline = "mlops_serving_starter.sagemaker.pipeline:main"
+
+[tool.poetry]
+packages = [{ include = "mlops_serving_starter", from = "src" }]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+

@@ -22,6 +22,8 @@ def train_and_log_model(config: dict, tracking_uri: str | None = None) -> dict:
         mlflow.set_tracking_uri(tracking_uri)
 
     mlflow.set_experiment(config["experiment_name"])
+
+    # using Iris for now — swap load_iris() for your own dataset here
     dataset = load_iris(as_frame=True)
 
     x_train, x_test, y_train, y_test = train_test_split(

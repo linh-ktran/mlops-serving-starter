@@ -1,0 +1,12 @@
+{
+  "experiment_name": "mlops-serving-starter",
+  "run_name": "rf-baseline",
+  "registered_model_name": "mlops-serving-starter-rf",
+  "test_size": 0.2,
+  "model_params": {
+    "n_estimators": 120,
+    "max_depth": 6,
+    "random_state": 42
+  }
+}
+

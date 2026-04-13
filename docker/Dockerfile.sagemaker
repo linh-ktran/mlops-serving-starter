@@ -1,0 +1,18 @@
+FROM python:3.11-slim
+
+LABEL com.amazonaws.sagemaker.capabilities.multi-models=false
+LABEL com.amazonaws.sagemaker.capabilities.accept-bind-to-port=true
+
+WORKDIR /opt/program
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir sagemaker-inference
+
+COPY src ./src
+ENV PYTHONPATH=/opt/program/src
+ENV SAGEMAKER_PROGRAM=mlops_serving_starter/sagemaker/inference.py
+
+# This image is a scaffold; entrypoint can be adapted to your SageMaker serving stack.
+CMD ["python", "-c", "print('SageMaker scaffold image built successfully')"]
+

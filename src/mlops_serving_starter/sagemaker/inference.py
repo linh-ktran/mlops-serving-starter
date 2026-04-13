@@ -10,6 +10,10 @@ import pandas as pd
 
 DEFAULT_MODEL_DIR_NAME = "model"
 
+# SageMaker calls these four functions in order for every inference request.
+# model_fn is called once at container start, the others on each request.
+# This matches the DefaultInferenceHandler interface from the sagemaker-inference SDK.
+
 
 def model_fn(model_dir: str):
     model_path = Path(model_dir) / DEFAULT_MODEL_DIR_NAME

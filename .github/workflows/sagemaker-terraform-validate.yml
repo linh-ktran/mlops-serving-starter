@@ -1,0 +1,69 @@
+name: sagemaker-terraform-validate
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "infra/terraform/**"
+      - "src/mlops_serving_starter/sagemaker/**"
+      - "scripts/sagemaker_pipeline_example.py"
+      - "Makefile"
+      - "pyproject.toml"
+      - ".github/workflows/sagemaker-terraform-validate.yml"
+  pull_request:
+    paths:
+      - "infra/terraform/**"
+      - "src/mlops_serving_starter/sagemaker/**"
+      - "scripts/sagemaker_pipeline_example.py"
+      - "Makefile"
+      - "pyproject.toml"
+      - ".github/workflows/sagemaker-terraform-validate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sagemaker-pipeline-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install project dependencies
+        run: |
+          make install
+
+      - name: Validate SageMaker pipeline dry-run scaffold
+        run: |
+          make sagemaker-pipeline-plan \
+            PIPELINE_NAME=ci-demo-pipeline \
+            EXECUTION_ROLE_ARN=arn:aws:iam::123456789012:role/SageMakerRole \
+            PROCESSING_IMAGE_URI=123456789012.dkr.ecr.eu-west-1.amazonaws.com/preprocess:latest \
+            TRAINING_IMAGE_URI=123456789012.dkr.ecr.eu-west-1.amazonaws.com/train:latest \
+            INFERENCE_IMAGE_URI=123456789012.dkr.ecr.eu-west-1.amazonaws.com/infer:latest \
+            INPUT_DATA_S3_URI=s3://demo-bucket/input \
+            TRANSFORM_INPUT_S3_URI=s3://demo-bucket/transform-input \
+            PROCESSING_OUTPUT_S3_URI=s3://demo-bucket/processing-output \
+            TRAINING_OUTPUT_S3_URI=s3://demo-bucket/training-output \
+            TRANSFORM_OUTPUT_S3_URI=s3://demo-bucket/transform-output > pipeline_plan.json
+          grep -q '"mode": "dry-run"' pipeline_plan.json
+          grep -q '"create_pipeline"' pipeline_plan.json
+
+  terraform-fmt-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform fmt check
+        run: |
+          terraform -chdir=infra/terraform fmt -check -recursive
+
+      - name: Terraform init and validate
+        run: |
+          terraform -chdir=infra/terraform init -backend=false
+          terraform -chdir=infra/terraform validate
+

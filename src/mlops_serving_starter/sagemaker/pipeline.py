@@ -3,18 +3,9 @@ from __future__ import annotations
 import argparse
 import importlib
 import json
-import re
 from typing import Any
 
-MAX_NAME_LENGTH = 63
-
-
-def sanitize_resource_name(value: str) -> str:
-    normalized = re.sub(r"[^A-Za-z0-9-]+", "-", value).strip("-")
-    normalized = re.sub(r"-+", "-", normalized)
-    if not normalized:
-        normalized = "mlops-serving-starter"
-    return normalized[:MAX_NAME_LENGTH]
+from mlops_serving_starter.utils.naming import sanitize_resource_name
 
 
 def build_pipeline_definition(
@@ -183,6 +174,17 @@ def create_sagemaker_client(region_name: str | None = None):
     return boto3.client("sagemaker", region_name=region_name)
 
 
+def _error_code_from_exception(exc: Exception) -> str | None:
+    response = getattr(exc, "response", None)
+    if not isinstance(response, dict):
+        return None
+    error = response.get("Error", {})
+    if not isinstance(error, dict):
+        return None
+    code = error.get("Code")
+    return code if isinstance(code, str) else None
+
+
 def upsert_pipeline(
     *,
     sagemaker_client: Any,
@@ -196,7 +198,7 @@ def upsert_pipeline(
         response = sagemaker_client.create_pipeline(**requests["create_pipeline"])
         action = "created"
     except Exception as exc:  # pragma: no cover
-        code = getattr(exc, "response", {}).get("Error", {}).get("Code")
+        code = _error_code_from_exception(exc)
         if code == "ResourceInUse":
             response = sagemaker_client.update_pipeline(**requests["update_pipeline"])
             action = "updated"
