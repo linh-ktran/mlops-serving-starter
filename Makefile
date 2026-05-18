@@ -6,6 +6,7 @@ RUFF := $(VENV)/bin/ruff
 MLFLOW := $(VENV)/bin/mlflow
 
 CONFIG ?= configs/train_config.json
+DATA ?= data/sample.csv
 MLFLOW_TRACKING_URI ?= file:$(CURDIR)/mlruns
 MODEL_URI ?=
 MODEL_OUTPUT ?= artifacts/model.tar.gz
@@ -26,7 +27,7 @@ PROCESSING_OUTPUT_S3_URI ?=
 TRAINING_OUTPUT_S3_URI ?=
 TRANSFORM_OUTPUT_S3_URI ?=
 
-.PHONY: install install-aws lint test train mlflow-ui serve package-model sagemaker-plan sagemaker-apply sagemaker-pipeline-plan sagemaker-pipeline-apply terraform-init terraform-validate
+.PHONY: install install-aws lint test generate-data train mlflow-ui serve package-model sagemaker-plan sagemaker-apply sagemaker-pipeline-plan sagemaker-pipeline-apply terraform-init terraform-validate
 
 install:
 	python3 -m venv $(VENV)
@@ -42,8 +43,11 @@ lint:
 test:
 	$(PYTEST) -q
 
+generate-data:
+	$(PYTHON) scripts/generate_sample_data.py
+
 train:
-	MLFLOW_TRACKING_URI="$(MLFLOW_TRACKING_URI)" $(PYTHON) -m mlops_serving_starter.training.train --config $(CONFIG) --tracking-uri "$(MLFLOW_TRACKING_URI)"
+	MLFLOW_TRACKING_URI="$(MLFLOW_TRACKING_URI)" $(PYTHON) -m mlops_serving_starter.training.train --config $(CONFIG) --data $(DATA) --tracking-uri "$(MLFLOW_TRACKING_URI)"
 
 mlflow-ui:
 	MLFLOW_TRACKING_URI="$(MLFLOW_TRACKING_URI)" $(MLFLOW) ui --host 127.0.0.1 --port 5001

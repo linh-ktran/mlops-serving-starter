@@ -11,11 +11,26 @@ from mlops_serving_starter.serving.model_loader import ModelService
 
 
 class PredictionRequest(BaseModel):
+    """Request body for the /predict endpoint.
+
+    For time-series forecasting, each record should contain the engineered
+    features for a single timestamp (lag values, rolling stats, forecast
+    features, calendar flags).  The feature set must match the model's
+    training signature.
+
+    Example record keys for aFRR:
+        afrr_capacity_price_up_lag_1_h1, rolling_mean_7, gas_price_forecast,
+        holiday_status, weekend_status, ...
+    """
     records: list[dict] = Field(min_length=1)
 
 
-class PredictionResponse(BaseModel):
+class ForecastResponse(BaseModel):
+    """Response body with predictions and optional metadata."""
     predictions: list[float]
+    target: str | None = None
+    horizon: int | None = None
+    unit: str = "EUR/MW"
 
 
 @lru_cache(maxsize=1)
@@ -29,18 +44,34 @@ def get_model_service() -> ModelService:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="MLOps Serving Starter", version="0.1.0")
+    app = FastAPI(
+        title="aFRR Capacity Price Forecast API",
+        version="0.2.0",
+        description="Serves XGBoost time-series forecasts for French aFRR capacity prices.",
+    )
 
     @app.get("/health")
     def health() -> dict:
         return {"status": "ok"}
 
-    @app.post("/predict", response_model=PredictionResponse)
-    def predict(payload: PredictionRequest) -> PredictionResponse:
+    @app.post("/predict", response_model=ForecastResponse)
+    def predict(payload: PredictionRequest) -> ForecastResponse:
+        """Generate forecasts from pre-computed feature records.
+
+        The client is responsible for computing the feature vector
+        (lags, rolling stats, exogenous forecasts, calendar flags) and
+        sending it as a list of dicts — one per timestamp to forecast.
+        """
         try:
             model_service = get_model_service()
             predictions = model_service.predict(payload.records)
-            return PredictionResponse(predictions=predictions)
+            # Capacity prices cannot be negative
+            predictions = [max(0.0, p) for p in predictions]
+            return ForecastResponse(
+                predictions=predictions,
+                target=os.getenv("TARGET_NAME", "afrr_capacity_price_up"),
+                horizon=int(os.getenv("FORECAST_HORIZON", "1")),
+            )
         except Exception as exc:  # pragma: no cover - integration runtime safety
             raise HTTPException(status_code=500, detail=str(exc)) from exc
 

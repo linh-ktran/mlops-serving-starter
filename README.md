@@ -1,36 +1,69 @@
 # mlops-serving-starter
 An end-to-end MLOps project covering training, experiment tracking, model serving, and deployment to AWS SageMaker.
 Built to understand what happens after the notebook — how models get versioned, served, and deployed in production.
+
+## Use Case: aFRR Capacity Price Forecasting
+This project forecasts **French aFRR capacity prices** using XGBoost time-series regression — inspired by a real production pipeline.
+
+**Problem:** Predict hourly capacity prices (EUR/MW) for up to 4 days ahead (horizons 1–4).
+
+**Approach:**
+- XGBoost regression with early stopping and bias correction
+- Lag features (1, 2, 3, 7, 14, 28 days), rolling statistics (7-day mean/min/max)
+- Exogenous inputs: FCR prices, consumption/gas/spot/solar/wind forecasts
+- Calendar features: French holidays, weekends
+- Per-horizon models (each horizon has its own trained model)
+- Chronological train/val split (no data leakage)
+
 ## Stack
+- **XGBoost** — time-series regression models
 - **MLflow** — experiment tracking and model registry
 - **FastAPI** — REST API to serve predictions
 - **SageMaker** — deployment target (endpoint + pipeline)
 - **Terraform** — infrastructure for endpoint, schedule, alarms
 - **GitHub Actions** — CI (lint, tests, Terraform validation)
+
 ## Project structure
 ```
 src/mlops_serving_starter/
-├── training/       # train + log to MLflow
+├── training/
+│   ├── train.py                # train XGBoost + log to MLflow
+│   └── feature_engineering.py  # lags, rolling stats, calendar, exogenous features
 ├── serving/        # load MLflow model, run predictions
 ├── api/            # FastAPI /predict endpoint
 └── sagemaker/      # inference handler, deploy script, pipeline builder
+scripts/
+├── generate_sample_data.py     # generate synthetic aFRR-like data
+configs/
+├── train_config.json           # model hyperparameters & experiment config
 infra/terraform/    # SageMaker endpoint + EventBridge schedule + CloudWatch alarms
-scripts/            # CLI for SageMaker deploy and pipeline steps
 ```
+
 ## Run it locally
 ```bash
 make install
 source .venv/bin/activate
-# train a model and log it to MLflow
+
+# generate synthetic time-series data
+make generate-data
+
+# train a model for horizon 1 (day-ahead) and log it to MLflow
 make train
+
+# train for a specific hour (like the production system)
+.venv/bin/python -m mlops_serving_starter.training.train --data data/sample.csv --horizon 1 --hour 10
+
 # open MLflow UI to compare runs
 make mlflow-ui   # → http://127.0.0.1:5001
+
 # serve the model (use the run_id from training)
 make serve MODEL_URI="runs:/<RUN_ID>/model"
-# test the API
+
+# test the API (send pre-computed feature vector)
 curl -X POST http://127.0.0.1:8000/predict \
   -H "Content-Type: application/json" \
-  -d '{"records":[{"sepal length (cm)":5.1,"sepal width (cm)":3.5,"petal length (cm)":1.4,"petal width (cm)":0.2}]}'
+  -d '{"records":[{"afrr_capacity_price_up_lag_1_h1":25.3,"afrr_capacity_price_up_lag_2_h1":24.1,"afrr_capacity_price_up_lag_3_h1":23.5,"afrr_capacity_price_up_lag_7_h1":22.0,"afrr_capacity_price_up_lag_14_h1":21.5,"afrr_capacity_price_up_lag_28_h1":20.0,"rolling_mean_7":23.4,"rolling_min_7":18.2,"rolling_max_7":30.1,"fcr_price_symmetric":15.0,"consumption_forecast":52000,"gas_price_forecast":32.5,"spot_price_forecast":55.0,"solar_forecast":2500,"wind_onshore_forecast":2100,"wind_offshore_forecast":900,"holiday_status":0,"weekend_status":0}]}'
+
 # run tests
 make test
 ```
@@ -72,6 +105,9 @@ cp infra/terraform/terraform.tfvars.example infra/terraform/terraform.tfvars
 terraform -chdir=infra/terraform plan -var-file=terraform.tfvars
 ```
 ## What I'd add next
+- Hyperparameter tuning with Bayesian optimization (BayesSearchCV + TimeSeriesSplit)
+- Train all 8 models per hour (2 targets × 4 horizons) in a single pipeline run
 - Model promotion flow (Staging → Production) in MLflow before deploying
-- Data drift monitoring with Evidently
+- Data drift monitoring with Evidently (detect distribution shifts in forecast features)
+- Backtesting framework to evaluate rolling-window performance over time
 - The EventBridge schedule wired to a real retrain trigger
