@@ -67,6 +67,24 @@ curl -X POST http://127.0.0.1:8000/predict \
 # run tests
 make test
 ```
+
+## Model Lifecycle (MLflow)
+```bash
+# train all 4 horizons at once
+make train-all
+
+# compare all registered model versions
+make compare
+
+# promote the best version to production
+make promote VERSION=10 ALIAS=production
+
+# serve the production model (no run_id needed!)
+make serve MODEL_URI="models:/afrr-capacity-price-xgboost@production"
+```
+
+Supported aliases: `staging`, `production`, `champion`, `challenger`
+
 ## Deploy to SageMaker
 ```bash
 # package the MLflow model into model.tar.gz
