@@ -27,7 +27,7 @@ PROCESSING_OUTPUT_S3_URI ?=
 TRAINING_OUTPUT_S3_URI ?=
 TRANSFORM_OUTPUT_S3_URI ?=
 
-.PHONY: install install-aws lint test generate-data train mlflow-ui serve package-model sagemaker-plan sagemaker-apply sagemaker-pipeline-plan sagemaker-pipeline-apply terraform-init terraform-validate
+.PHONY: install install-aws lint test generate-data train train-all promote compare mlflow-ui serve package-model sagemaker-plan sagemaker-apply sagemaker-pipeline-plan sagemaker-pipeline-apply terraform-init terraform-validate
 
 install:
 	python3 -m venv $(VENV)
@@ -40,6 +40,9 @@ install-aws:
 lint:
 	$(RUFF) check src tests
 
+format:
+	$(RUFF) format src tests scripts
+
 test:
 	$(PYTEST) -q
 
@@ -48,6 +51,16 @@ generate-data:
 
 train:
 	MLFLOW_TRACKING_URI="$(MLFLOW_TRACKING_URI)" $(PYTHON) -m mlops_serving_starter.training.train --config $(CONFIG) --data $(DATA) --tracking-uri "$(MLFLOW_TRACKING_URI)"
+
+train-all:
+	MLFLOW_TRACKING_URI="$(MLFLOW_TRACKING_URI)" $(PYTHON) -m mlops_serving_starter.training.train_all_horizons --config $(CONFIG) --data $(DATA) --tracking-uri "$(MLFLOW_TRACKING_URI)"
+
+compare:
+	MLFLOW_TRACKING_URI="$(MLFLOW_TRACKING_URI)" $(PYTHON) -m mlops_serving_starter.training.promote --compare --tracking-uri "$(MLFLOW_TRACKING_URI)"
+
+promote:
+	@if [ -z "$(VERSION)" ] || [ -z "$(ALIAS)" ]; then echo "Usage: make promote VERSION=4 ALIAS=production"; exit 1; fi
+	MLFLOW_TRACKING_URI="$(MLFLOW_TRACKING_URI)" $(PYTHON) -m mlops_serving_starter.training.promote --version $(VERSION) --alias $(ALIAS) --tracking-uri "$(MLFLOW_TRACKING_URI)"
 
 mlflow-ui:
 	MLFLOW_TRACKING_URI="$(MLFLOW_TRACKING_URI)" $(MLFLOW) ui --host 127.0.0.1 --port 5001

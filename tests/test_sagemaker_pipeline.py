@@ -109,4 +109,3 @@ def test_upsert_pipeline_apply_updates_when_exists():
 
     assert result["action"] == "updated"
     assert [name for name, _ in client.calls] == ["create_pipeline", "update_pipeline"]
-

@@ -1,13 +1,6 @@
 """Generate synthetic aFRR-like hourly time-series data for local development.
 
-Produces a CSV at data/sample.csv with columns matching the real pipeline:
-    timestamp_utc, afrr_capacity_price_up, afrr_capacity_price_down,
-    fcr_price_symmetric, consumption_forecast, gas_price_forecast,
-    spot_price_forecast, solar_forecast, wind_onshore_forecast,
-    wind_offshore_forecast
-
-Usage:
-    python scripts/generate_sample_data.py
+Usage: python scripts/generate_sample_data.py
 """
 
 from __future__ import annotations
@@ -86,4 +79,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

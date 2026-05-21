@@ -44,7 +44,7 @@ def test_sanitize_resource_name_normalizes_special_characters():
     assert sanitize_resource_name("My Endpoint_Name !!!") == "My-Endpoint-Name"
 
 
-def test_build_model_request_contains_expected_program_env():
+def test_build_model_request_structure():
     request = build_create_model_request(
         endpoint_name="demo-endpoint",
         model_data_url="s3://bucket/model.tar.gz",
@@ -53,7 +53,8 @@ def test_build_model_request_contains_expected_program_env():
     )
 
     assert request["ModelName"] == "demo-endpoint-model"
-    assert request["PrimaryContainer"]["Environment"]["SAGEMAKER_PROGRAM"] == "mlops_serving_starter/sagemaker/inference.py"
+    assert request["PrimaryContainer"]["Image"].endswith("mlops-serving:latest")
+    assert request["PrimaryContainer"]["ModelDataUrl"] == "s3://bucket/model.tar.gz"
 
 
 def test_build_endpoint_config_uses_instance_settings():
@@ -130,4 +131,3 @@ def test_deploy_to_sagemaker_apply_updates_existing_endpoint():
         "describe_endpoint",
         "update_endpoint",
     ]
-

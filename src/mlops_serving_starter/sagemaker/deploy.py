@@ -34,9 +34,7 @@ def build_create_model_request(
         "PrimaryContainer": {
             "Image": image_uri,
             "ModelDataUrl": model_data_url,
-            "Environment": {
-                "SAGEMAKER_PROGRAM": "mlops_serving_starter/sagemaker/inference.py",
-            },
+            "Environment": {},
         },
         "ExecutionRoleArn": execution_role_arn,
     }
@@ -215,5 +213,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
