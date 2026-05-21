@@ -37,4 +37,3 @@ def test_predict_endpoint(monkeypatch):
     assert data["target"] == "afrr_capacity_price_up"
     assert data["horizon"] == 1
     assert data["unit"] == "EUR/MW"
-

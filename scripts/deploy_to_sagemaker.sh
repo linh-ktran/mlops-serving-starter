@@ -21,7 +21,7 @@ set -euo pipefail
 ENDPOINT_NAME="mlops-serving-starter-endpoint"
 ECR_REPO_NAME="mlops-serving-starter"
 INSTANCE_TYPE="ml.t2.medium"  # cheapest option (~€0.065/hour)
-S3_BUCKET="${S3_BUCKET:-ml-factory.dev.ep.eu}"
+S3_BUCKET="${S3_BUCKET:-your-bucket-name}"
 S3_PREFIX="${S3_PREFIX:-mlflow/mlops-serving-starter}"
 
 # Colors
@@ -61,7 +61,6 @@ REGION="${3:?Usage: $0 <RUN_ID> <ACCOUNT_ID> <REGION>}"
 ACTUAL_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 info "Active AWS account: $ACTUAL_ACCOUNT_ID (profile: ${AWS_PROFILE:-default})"
 
-S3_BUCKET="ml-factory.dev.ep.eu"
 ECR_URI="${ACTUAL_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${ECR_REPO_NAME}:latest"
 MODEL_URI="runs:/${RUN_ID}/model"
 MODEL_S3_PATH="s3://${S3_BUCKET}/${S3_PREFIX}/model.tar.gz"
@@ -153,8 +152,5 @@ info "    /dev/stdout"
 info ""
 warn "⚠️  REMEMBER TO DELETE AFTER TESTING:"
 warn "  ./scripts/deploy_to_sagemaker.sh --cleanup $ACCOUNT_ID $REGION"
-
-
-
 
 

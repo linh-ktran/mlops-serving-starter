@@ -10,9 +10,7 @@ import pandas as pd
 
 DEFAULT_MODEL_DIR_NAME = "model"
 
-# SageMaker calls these four functions in order for every inference request.
-# model_fn is called once at container start, the others on each request.
-# This matches the DefaultInferenceHandler interface from the sagemaker-inference SDK.
+# SageMaker inference handler functions (model_fn, input_fn, predict_fn, output_fn).
 
 
 def model_fn(model_dir: str):
@@ -44,4 +42,3 @@ def output_fn(prediction, accept: str):
         return frame.to_csv(index=False)
 
     raise ValueError(f"Unsupported accept type: {accept}")
-

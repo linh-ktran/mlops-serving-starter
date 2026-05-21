@@ -24,4 +24,3 @@ def test_predict_and_output_json():
     output = output_fn(prediction, "application/json")
 
     assert output == '{"predictions": [0.0]}'
-

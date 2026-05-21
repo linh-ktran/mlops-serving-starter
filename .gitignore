@@ -27,7 +27,9 @@ htmlcov/
 mlruns/
 mlartifacts/
 artifacts/
+data/sample.csv
 *.joblib
+pipeline_plan.json
 
 # Jupyter and notebooks
 .ipynb_checkpoints/

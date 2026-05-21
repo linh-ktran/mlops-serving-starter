@@ -47,11 +47,8 @@ def test_train_and_log_model(tmp_path):
         },
     }
 
-    result = train_and_log_model(
-        config=config, data_path=data_path, tracking_uri=tracking_uri, horizon=1
-    )
+    result = train_and_log_model(config=config, data_path=data_path, tracking_uri=tracking_uri, horizon=1)
 
     assert result["run_id"]
     assert result["model_uri"].startswith("runs:/")
     assert result["metrics"]["mae"] > 0
-

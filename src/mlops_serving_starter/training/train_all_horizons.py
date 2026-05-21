@@ -29,9 +29,9 @@ def main() -> None:
 
     results = []
     for horizon in range(1, 5):
-        logger.info(f"{'='*60}")
+        logger.info(f"{'=' * 60}")
         logger.info(f"Training horizon {horizon}/4")
-        logger.info(f"{'='*60}")
+        logger.info(f"{'=' * 60}")
         result = train_and_log_model(
             config=config,
             data_path=Path(args.data),
@@ -46,11 +46,12 @@ def main() -> None:
     print("SUMMARY — All horizons")
     print("=" * 60)
     for r in results:
-        print(f"  Horizon {r['horizon']}: MAE={r['metrics']['mae']:.2f}  RMSE={r['metrics']['rmse']:.2f}  run_id={r['run_id'][:8]}...")
+        print(
+            f"  Horizon {r['horizon']}: MAE={r['metrics']['mae']:.2f}  RMSE={r['metrics']['rmse']:.2f}  run_id={r['run_id'][:8]}..."
+        )
     print()
     print(json.dumps(results, indent=2))
 
 
 if __name__ == "__main__":
     main()
-

@@ -1,11 +1,4 @@
-"""Train XGBoost models for aFRR capacity-price time-series forecasting.
-
-Replicates the approach used in fr_capacity_price_forecast_afrr:
-- XGBoost regression with early stopping
-- Lag + rolling + calendar + exogenous forecast features
-- Horizon-aware train/predict split (chronological)
-- Bias correction from validation tail
-- All logged to MLflow
+"""Train XGBoost for aFRR capacity-price forecasting and log to MLflow.
 
 Usage:
     python -m mlops_serving_starter.training.train --config configs/train_config.json --data data/sample.csv
@@ -52,18 +45,7 @@ def train_and_log_model(
     horizon: int = 1,
     hour: int | None = None,
 ) -> dict:
-    """Train an XGBoost model for one target + horizon, log to MLflow.
-
-    Args:
-        config: Training configuration dict.
-        data_path: Path to the CSV dataset.
-        tracking_uri: MLflow tracking URI (optional).
-        horizon: Forecast horizon in days (1–4).
-        hour: If set, filter to this specific hour-of-day. Otherwise train on all hours.
-
-    Returns:
-        Dict with run_id, model_uri, and metrics.
-    """
+    """Train one XGBoost model for a given horizon, log everything to MLflow."""
     if tracking_uri:
         mlflow.set_tracking_uri(tracking_uri)
 
@@ -121,14 +103,16 @@ def train_and_log_model(
             "best_iteration": int(model.best_iteration),
         }
 
-        mlflow.log_params({
-            "target": target,
-            "horizon": horizon,
-            "hour": hour if hour is not None else "all",
-            "train_samples": len(X_train),
-            "val_samples": len(X_val),
-            **{k: v for k, v in config["model_params"].items()},
-        })
+        mlflow.log_params(
+            {
+                "target": target,
+                "horizon": horizon,
+                "hour": hour if hour is not None else "all",
+                "train_samples": len(X_train),
+                "val_samples": len(X_val),
+                **{k: v for k, v in config["model_params"].items()},
+            }
+        )
         mlflow.log_metrics(metrics)
 
         signature = mlflow.models.infer_signature(X_train, model.predict(X_train))
@@ -168,4 +152,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

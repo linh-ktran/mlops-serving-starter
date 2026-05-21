@@ -1,7 +1,6 @@
-"""Feature engineering for aFRR capacity price forecasting (simplified local version).
+"""Feature engineering for aFRR capacity price time-series models.
 
-Inspired by fr_capacity_price_forecast_afrr — builds lag, rolling, and calendar
-features suitable for XGBoost time-series regression.
+Builds lag, rolling, calendar and exogenous features for XGBoost.
 """
 
 from __future__ import annotations
@@ -13,9 +12,7 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-# Forecast features (exogenous inputs).
-# In production these come from external data sources; locally they are loaded
-# from the sample CSV.
+# Exogenous inputs — in production these come from external APIs
 FORECAST_FEATURES = [
     "fcr_price_symmetric",
     "consumption_forecast",
@@ -41,19 +38,7 @@ def prepare_features_for_horizon(
     target: str,
     horizon: int,
 ) -> pd.DataFrame:
-    """Build features for a given forecast horizon.
-
-    Expects hourly data indexed by timestamp_utc (all 24 hours per day).
-    Filter by hour *after* calling this function.
-
-    Args:
-        df: Hourly DataFrame, indexed by timestamp_utc.
-        target: Target column name (e.g. "afrr_capacity_price_up").
-        horizon: Forecast horizon in days (1–4).
-
-    Returns:
-        DataFrame containing only the selected features + target.
-    """
+    """Build all features for one forecast horizon. Filter by hour *after* calling this."""
     df = df.copy()
 
     df = add_holiday_status(df)
@@ -129,4 +114,3 @@ def select_features(df: pd.DataFrame, target: str, horizon: int) -> pd.DataFrame
         raise ValueError(f"Missing columns after feature engineering: {missing}")
 
     return df[required]
-

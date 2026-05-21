@@ -40,6 +40,9 @@ install-aws:
 lint:
 	$(RUFF) check src tests
 
+format:
+	$(RUFF) format src tests scripts
+
 test:
 	$(PYTEST) -q
 
