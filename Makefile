@@ -1,9 +1,8 @@
 VENV ?= .venv
-PYTHON := $(VENV)/bin/python
-PIP := $(VENV)/bin/pip
-PYTEST := $(VENV)/bin/pytest
-RUFF := $(VENV)/bin/ruff
-MLFLOW := $(VENV)/bin/mlflow
+PYTHON := uv run python
+PYTEST := uv run pytest
+RUFF := uv run ruff
+MLFLOW := uv run mlflow
 
 CONFIG ?= configs/train_config.json
 DATA ?= data/sample.csv
@@ -30,12 +29,10 @@ TRANSFORM_OUTPUT_S3_URI ?=
 .PHONY: install install-aws lint test generate-data train train-all promote compare mlflow-ui serve package-model sagemaker-plan sagemaker-apply sagemaker-pipeline-plan sagemaker-pipeline-apply terraform-init terraform-validate
 
 install:
-	python3 -m venv $(VENV)
-	$(PIP) install --upgrade pip
-	$(PIP) install -e ".[dev]"
+	uv sync --extra dev
 
 install-aws:
-	$(PIP) install -e ".[dev,aws,sagemaker]"
+	uv sync --extra dev --extra aws --extra sagemaker
 
 lint:
 	$(RUFF) check src tests
