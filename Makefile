@@ -1,4 +1,3 @@
-VENV ?= .venv
 PYTHON := uv run python
 PYTEST := uv run pytest
 RUFF := uv run ruff
@@ -26,12 +25,15 @@ PROCESSING_OUTPUT_S3_URI ?=
 TRAINING_OUTPUT_S3_URI ?=
 TRANSFORM_OUTPUT_S3_URI ?=
 
-.PHONY: install install-aws lint test generate-data train train-all promote compare mlflow-ui serve package-model sagemaker-plan sagemaker-apply sagemaker-pipeline-plan sagemaker-pipeline-apply terraform-init terraform-validate
+.PHONY: ensure-uv install install-aws lint test generate-data train train-all promote compare mlflow-ui serve package-model sagemaker-plan sagemaker-apply sagemaker-pipeline-plan sagemaker-pipeline-apply terraform-init terraform-validate
 
-install:
+ensure-uv:
+	@command -v uv >/dev/null 2>&1 || { echo "Installing uv..."; curl -LsSf https://astral.sh/uv/install.sh | sh; }
+
+install: ensure-uv
 	uv sync --frozen --extra dev
 
-install-aws:
+install-aws: ensure-uv
 	uv sync --frozen --extra dev --extra aws --extra sagemaker
 
 lint:

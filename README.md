@@ -44,7 +44,7 @@ infra/terraform/    # SageMaker endpoint + EventBridge schedule + CloudWatch ala
 
 ## Run it locally
 
-Requires [uv](https://docs.astral.sh/uv/) (install: `curl -LsSf https://astral.sh/uv/install.sh | sh`).
+Requires [uv](https://docs.astral.sh/uv/). See [installation options](https://docs.astral.sh/uv/getting-started/installation/) (Homebrew, pipx, standalone installer, etc.).
 
 ```bash
 make install          # uv sync --extra dev (creates .venv automatically)

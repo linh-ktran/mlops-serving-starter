@@ -39,7 +39,7 @@ deploy-sagemaker = "mlops_serving_starter.sagemaker.deploy:main"
 deploy-sagemaker-pipeline = "mlops_serving_starter.sagemaker.pipeline:main"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.0.0,<2.0.0"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
