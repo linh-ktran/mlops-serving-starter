@@ -29,10 +29,10 @@ TRANSFORM_OUTPUT_S3_URI ?=
 .PHONY: install install-aws lint test generate-data train train-all promote compare mlflow-ui serve package-model sagemaker-plan sagemaker-apply sagemaker-pipeline-plan sagemaker-pipeline-apply terraform-init terraform-validate
 
 install:
-	uv sync --extra dev
+	uv sync --frozen --extra dev
 
 install-aws:
-	uv sync --extra dev --extra aws --extra sagemaker
+	uv sync --frozen --extra dev --extra aws --extra sagemaker
 
 lint:
 	$(RUFF) check src tests
