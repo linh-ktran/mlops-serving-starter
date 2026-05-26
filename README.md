@@ -16,6 +16,9 @@ This project forecasts **French aFRR capacity prices** using XGBoost time-series
 - Chronological train/val split (no data leakage)
 
 ## Stack
+- **uv** — fast Python package manager and project tool
+- **Hatchling** — PEP 517 build backend
+- **Ruff** — linter and formatter
 - **XGBoost** — time-series regression models
 - **MLflow** — experiment tracking and model registry
 - **FastAPI** — REST API to serve predictions
@@ -40,9 +43,11 @@ infra/terraform/    # SageMaker endpoint + EventBridge schedule + CloudWatch ala
 ```
 
 ## Run it locally
+
+Requires [uv](https://docs.astral.sh/uv/). See [installation options](https://docs.astral.sh/uv/getting-started/installation/) (Homebrew, pipx, standalone installer, etc.).
+
 ```bash
-make install
-source .venv/bin/activate
+make install          # uv sync --extra dev (creates .venv automatically)
 
 # generate synthetic time-series data
 make generate-data
@@ -51,7 +56,7 @@ make generate-data
 make train
 
 # train for a specific hour (like the production system)
-.venv/bin/python -m mlops_serving_starter.training.train --data data/sample.csv --horizon 1 --hour 10
+uv run python -m mlops_serving_starter.training.train --data data/sample.csv --horizon 1 --hour 10
 
 # open MLflow UI to compare runs
 make mlflow-ui   # → http://127.0.0.1:5001

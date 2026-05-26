@@ -1,9 +1,7 @@
-VENV ?= .venv
-PYTHON := $(VENV)/bin/python
-PIP := $(VENV)/bin/pip
-PYTEST := $(VENV)/bin/pytest
-RUFF := $(VENV)/bin/ruff
-MLFLOW := $(VENV)/bin/mlflow
+PYTHON := uv run python
+PYTEST := uv run pytest
+RUFF := uv run ruff
+MLFLOW := uv run mlflow
 
 CONFIG ?= configs/train_config.json
 DATA ?= data/sample.csv
@@ -27,15 +25,16 @@ PROCESSING_OUTPUT_S3_URI ?=
 TRAINING_OUTPUT_S3_URI ?=
 TRANSFORM_OUTPUT_S3_URI ?=
 
-.PHONY: install install-aws lint test generate-data train train-all promote compare mlflow-ui serve package-model sagemaker-plan sagemaker-apply sagemaker-pipeline-plan sagemaker-pipeline-apply terraform-init terraform-validate
+.PHONY: ensure-uv install install-aws lint test generate-data train train-all promote compare mlflow-ui serve package-model sagemaker-plan sagemaker-apply sagemaker-pipeline-plan sagemaker-pipeline-apply terraform-init terraform-validate
 
-install:
-	python3 -m venv $(VENV)
-	$(PIP) install --upgrade pip
-	$(PIP) install -e ".[dev]"
+ensure-uv:
+	@command -v uv >/dev/null 2>&1 || { echo "Installing uv..."; curl -LsSf https://astral.sh/uv/install.sh | sh; }
 
-install-aws:
-	$(PIP) install -e ".[dev,aws,sagemaker]"
+install: ensure-uv
+	uv sync --frozen --extra dev
+
+install-aws: ensure-uv
+	uv sync --frozen --extra dev --extra aws --extra sagemaker
 
 lint:
 	$(RUFF) check src tests
