@@ -28,8 +28,10 @@ mlruns/
 mlartifacts/
 artifacts/
 data/sample.csv
+data/current.csv
 *.joblib
 pipeline_plan.json
+reports/
 
 # Jupyter and notebooks
 .ipynb_checkpoints/

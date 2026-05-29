@@ -31,6 +31,9 @@ aws = [
 sagemaker = [
     "sagemaker-inference>=1.10.1,<2.0.0"
 ]
+monitoring = [
+    "evidently>=0.4.0,<1.0.0"
+]
 
 [project.scripts]
 train-model = "mlops_serving_starter.training.train:main"
