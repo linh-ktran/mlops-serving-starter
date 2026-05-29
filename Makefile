@@ -24,8 +24,12 @@ TRANSFORM_INPUT_S3_URI ?=
 PROCESSING_OUTPUT_S3_URI ?=
 TRAINING_OUTPUT_S3_URI ?=
 TRANSFORM_OUTPUT_S3_URI ?=
+REFERENCE_DATA ?= data/sample.csv
+CURRENT_DATA ?= data/current.csv
+DRIFT_OUTPUT ?= reports/drift_report.html
+DRIFT_SHARE ?= 0.5
 
-.PHONY: ensure-uv install install-aws lint test generate-data train train-all promote compare mlflow-ui serve package-model sagemaker-plan sagemaker-apply sagemaker-pipeline-plan sagemaker-pipeline-apply terraform-init terraform-validate
+.PHONY: ensure-uv install install-aws install-monitoring lint test drift-check generate-data train train-all promote compare mlflow-ui serve package-model sagemaker-plan sagemaker-apply sagemaker-pipeline-plan sagemaker-pipeline-apply terraform-init terraform-validate
 
 ensure-uv:
 	@command -v uv >/dev/null 2>&1 || { echo "Installing uv..."; curl -LsSf https://astral.sh/uv/install.sh | sh; }
@@ -92,4 +96,23 @@ terraform-init:
 
 terraform-validate:
 	terraform -chdir=infra/terraform validate
+
+install-monitoring: ensure-uv
+	uv sync --frozen --extra dev --extra monitoring
+
+drift-check:
+	$(PYTHON) -m mlops_serving_starter.monitoring.drift \
+		--reference $(REFERENCE_DATA) \
+		--current $(CURRENT_DATA) \
+		--output $(DRIFT_OUTPUT) \
+		--drift-share $(DRIFT_SHARE)
+
+drift-check-ci:
+	$(PYTHON) -m mlops_serving_starter.monitoring.drift \
+		--reference $(REFERENCE_DATA) \
+		--current $(CURRENT_DATA) \
+		--output reports/drift_report.json \
+		--json-only \
+		--drift-share $(DRIFT_SHARE) \
+		--fail-on-drift
 

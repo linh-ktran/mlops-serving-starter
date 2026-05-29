@@ -34,6 +34,7 @@ src/mlops_serving_starter/
 │   └── feature_engineering.py  # lags, rolling stats, calendar, exogenous features
 ├── serving/        # load MLflow model, run predictions
 ├── api/            # FastAPI /predict endpoint
+├── monitoring/     # data drift detection with Evidently
 └── sagemaker/      # inference handler, deploy script, pipeline builder
 scripts/
 ├── generate_sample_data.py     # generate synthetic aFRR-like data
@@ -127,10 +128,29 @@ make terraform-validate
 cp infra/terraform/terraform.tfvars.example infra/terraform/terraform.tfvars
 terraform -chdir=infra/terraform plan -var-file=terraform.tfvars
 ```
+## Data Drift Monitoring
+Detects distribution shifts in forecast features using [Evidently](https://www.evidentlyai.com/). Compares a reference dataset (training data) against current production data.
+
+```bash
+# install monitoring dependencies
+make install-monitoring
+
+# run drift check (generates HTML report + JSON summary)
+make drift-check REFERENCE_DATA=data/sample.csv CURRENT_DATA=data/current.csv
+
+# CI mode — exits with code 1 if drift is detected
+make drift-check-ci REFERENCE_DATA=data/sample.csv CURRENT_DATA=data/current.csv
+```
+
+**Monitored features:** FCR price, consumption/gas/spot/solar/wind forecasts, rolling stats (7-day mean/min/max), calendar (holiday/weekend).
+
+**Statistical tests supported:** `ks` (default), `wasserstein`, `psi`, `kl_div`, `jensen_shannon`.
+
+Reports are saved to `reports/` (HTML for visual inspection, JSON for CI/alerting).
+
 ## What I'd add next
 - Hyperparameter tuning with Bayesian optimization (BayesSearchCV + TimeSeriesSplit)
 - Train all 8 models per hour (2 targets × 4 horizons) in a single pipeline run
 - Model promotion flow (Staging → Production) in MLflow before deploying
-- Data drift monitoring with Evidently (detect distribution shifts in forecast features)
 - Backtesting framework to evaluate rolling-window performance over time
 - The EventBridge schedule wired to a real retrain trigger
