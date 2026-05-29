@@ -8,7 +8,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from mlops_serving_starter.monitoring.drift import (
+pytest.importorskip("evidently", reason="evidently not installed (install with: uv sync --extra monitoring)")
+
+from mlops_serving_starter.monitoring.drift import (  # noqa: E402
     MONITORED_FEATURES,
     build_drift_report,
     extract_drift_summary,
